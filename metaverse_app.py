@@ -127,3 +127,16 @@ if st.button('Save to CSV'):
 if st.session_state.data:
     st.write("Accumulated Transactions:")
     st.dataframe(pd.DataFrame(st.session_state.data))
+
+
+import io
+
+if st.session_state.data:
+    df = pd.DataFrame(st.session_state.data)
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Download Transaction Data as CSV",
+        data=csv,
+        file_name="transactions.csv",
+        mime="text/csv",
+    )
