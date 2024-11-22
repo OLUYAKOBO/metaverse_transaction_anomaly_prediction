@@ -21,23 +21,27 @@ if "data" not in st.session_state:
     st.session_state.data = []
 
 # Function to save accumulated data to a CSV file
-def save_to_csv(file_path):
+#def save_to_csv(file_path):
     # Check if the file exists
-    if os.path.exists(file_path):
+    #if os.path.exists(file_path):
         # Load existing data and append new rows
-        existing_data = pd.read_csv(file_path)
-        new_data = pd.DataFrame(st.session_state.data)
-        updated_data = pd.concat([existing_data, new_data], ignore_index=True)
-    else:
+        #existing_data = pd.read_csv(file_path)
+        #new_data = pd.DataFrame(st.session_state.data)
+        #updated_data = pd.concat([existing_data, new_data], ignore_index=True)
+    #else:
         # If the file doesn't exist, just save the new data
-        updated_data = pd.DataFrame(st.session_state.data)
+        #updated_data = pd.DataFrame(st.session_state.data)
 
     # Save the updated data back to the file
-    updated_data.to_csv(file_path, index=False)
-    st.success(f"Data saved to {file_path}!")
+    #updated_data.to_csv(file_path, index=False)
+    #st.success(f"Data saved to {file_path}!")
 
     # Clear session state data
-    st.session_state.data = []
+    #st.session_state.data = []
+
+
+
+
 
 # Title and description
 st.title("*Metaverse Transaction Anomaly Prediction*")
@@ -120,23 +124,46 @@ if st.button('*Click here*'):
     #st.success("Transaction details added to memory.")
 
 # Save to CSV button
-if st.button('Save to CSV'):
-    save_to_csv('transactions.csv')
+#if st.button('Save to CSV'):
+    #save_to_csv('transactions.csv')
 
 # Display accumulated rows
-if st.session_state.data:
-    st.write("Accumulated Transactions:")
-    st.dataframe(pd.DataFrame(st.session_state.data))
+#if st.session_state.data:
+    #st.write("Accumulated Transactions:")
+    #st.dataframe(pd.DataFrame(st.session_state.data))
 
 
 import io
 
+# Allow user to upload an existing transactions.csv file
+uploaded_file = st.file_uploader("Upload your existing transactions.csv file", type=['csv'])
+
+existing_data = pd.DataFrame()  # Initialize empty DataFrame for existing data
+
+if uploaded_file is not None:
+    existing_data = pd.read_csv(uploaded_file)
+    st.success("Existing file loaded.")
+    st.write("Loaded data:")
+    st.dataframe(existing_data)
+
+# Combine existing data with new session data
 if st.session_state.data:
-    df = pd.DataFrame(st.session_state.data)
-    csv = df.to_csv(index=False).encode('utf-8')
+    session_df = pd.DataFrame(st.session_state.data)
+    if not existing_data.empty:
+        combined_data = pd.concat([existing_data, session_df], ignore_index=True)
+    else:
+        combined_data = session_df
+else:
+    combined_data = existing_data
+
+# Provide a download button for the updated file
+if not combined_data.empty:
+    csv = combined_data.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label="Download Transaction Data as CSV",
+        label="Download Updated Transactions CSV",
         data=csv,
         file_name="transactions.csv",
-        mime="text/csv",
+        mime="text/csv"
     )
+else:
+    st.info("No data to download yet.")
