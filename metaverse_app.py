@@ -41,8 +41,6 @@ if "data" not in st.session_state:
 
 
 
-
-
 # Title and description
 st.title("*Metaverse Transaction Anomaly Prediction*")
 st.write("This application predicts the anomaly of the metaverse transaction")
@@ -167,3 +165,9 @@ if not combined_data.empty:
     )
 else:
     st.info("No data to download yet.")
+
+
+
+st.sidebar.write("After you have input your values and have gotten your prediction,"
+                 " please ensure you download the CSV file and send it to my mail")
+st.sidebar.write("Email: junaidyakub28@gmail.com")
