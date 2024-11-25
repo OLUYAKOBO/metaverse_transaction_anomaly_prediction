@@ -83,7 +83,7 @@ def transac_details():
 
 df = transac_details()
 
-# Encode categorical features
+## Encode categorical features
 def encode(df):
     cat_columns = ['transaction_type', 'location_region', 'purchase_pattern', 'age_group']
     encoded_values = encoder.transform(df[cat_columns])
