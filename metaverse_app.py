@@ -170,4 +170,5 @@ else:
 
 st.sidebar.write("After you have input your values and have gotten your prediction,"
                  " please ensure you download the CSV file and send it to my mail")
+
 st.sidebar.write("Email: junaidyakub28@gmail.com")
