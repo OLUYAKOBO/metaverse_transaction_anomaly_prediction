@@ -3,10 +3,10 @@ import pandas as pd
 import pickle as pkl
 from sklearn.preprocessing import StandardScaler
 import numpy as np
-import pickle
-import os
-
 import json
+import os
+import io
+import pickle
 
 def load_json():
     with open('sending_add.json', 'r') as f:
@@ -15,31 +15,21 @@ def load_json():
     with open('receiving_add.json', 'r') as f:
         receiving_add = json.load(f)
 
-    return sending_add,receiving_add
-sending_add,receiving_add = load_json()
+    return sending_add, receiving_add
+
+sending_add, receiving_add = load_json()
 
 # Initialize session state for storing rows
 if "data" not in st.session_state:
     st.session_state.data = []
 
-# Function to save accumulated data to a CSV file
-def save_to_csv(file_path):
-    # Check if the file exists
-    if os.path.exists(file_path):
-        # Load existing data and append new rows
-        existing_data = pd.read_csv(file_path)
-        new_data = pd.DataFrame(st.session_state.data)
-        updated_data = pd.concat([existing_data, new_data], ignore_index=True)
+# Function to save accumulated data to a DataFrame
+def get_data_as_dataframe():
+    if st.session_state.data:
+        return pd.DataFrame(st.session_state.data)
     else:
-        # If the file doesn't exist, just save the new data
-        updated_data = pd.DataFrame(st.session_state.data)
-
-    # Save the updated data back to the file
-    updated_data.to_csv(file_path, index=False)
-    st.success(f"Data saved to {file_path}!")
-
-    # Clear session state data
-    st.session_state.data = []
+        return pd.DataFrame(columns=['amount', 'login_frequency', 'session_duration', 'risk_score', 
+                                     'sending_address', 'receiving_address', 'prediction'])
 
 # Title and description
 st.title("*Metaverse Transaction Anomaly Prediction*")
@@ -81,15 +71,15 @@ def transac_details():
 
 df = transac_details()
 
-## Encode categorical features
-
+# Load encoder
 def load_encoder():
-
-    with open("encoder.pkl","rb") as f:
+    with open("encoder.pkl", "rb") as f:
         encoder = pickle.load(f)
     return encoder
+
 encoder = load_encoder()
 
+# Encode categorical features
 def encode(df):
     cat_columns = ['transaction_type', 'location_region', 'purchase_pattern', 'age_group']
     encoded_values = encoder.transform(df[cat_columns])
@@ -102,7 +92,7 @@ df = encode(df)
 
 # Load model
 def load_model():
-    with open("rand_model.pkl","rb") as f:
+    with open("rand_model.pkl", "rb") as f:
         model = pickle.load(f)
     return model
 
@@ -111,16 +101,13 @@ model = load_model()
 # Predict transaction risk
 prediction = model.predict(df)[0]
 
-import time
-
 # Prediction logic
 if st.button('*Click here*'):
-    time.sleep(10)
     with st.spinner('Predicting... Please wait...'):
         if prediction == 0:
-            st.success("This is a low risk transaction")
+            st.success("This is a low-risk transaction")
         else:
-            st.success("This is a high risk transaction")
+            st.success("This is a high-risk transaction")
 
     # Add data to session state for storage
     st.session_state.data.append({
@@ -132,56 +119,21 @@ if st.button('*Click here*'):
         'receiving_address': st.session_state.receiving_address_input,
         'prediction': 'Low Risk' if prediction == 0 else 'High Risk'
     })
-    #st.success("Transaction details added to memory.")
 
-# Save to CSV button
-if st.button('Save to CSV'):
-    save_to_csv('transactions.csv')
+# Generate CSV for download
+if st.button('Save and Download CSV'):
+    data_df = get_data_as_dataframe()
+    if not data_df.empty:
+        csv_buffer = io.StringIO()
+        data_df.to_csv(csv_buffer, index=False)
+        csv_data = csv_buffer.getvalue()
 
-# Display accumulated rows
-#if st.session_state.data:
-    #st.write("Accumulated Transactions:")
-    #st.dataframe(pd.DataFrame(st.session_state.data))
-
-
-import io
-
-# Allow user to upload an existing transactions.csv file
-#uploaded_file = st.file_uploader("Upload your existing transactions.csv file", type=['csv'])
-
-#existing_data = pd.DataFrame()  # Initialize empty DataFrame for existing data
-
-#if uploaded_file is not None:
-    #existing_data = pd.read_csv(uploaded_file)
-    #st.success("Existing file loaded.")
-    #st.write("Loaded data:")
-    #st.dataframe(existing_data)
-
-# Combine existing data with new session data
-#if st.session_state.data:
-    #session_df = pd.DataFrame(st.session_state.data)
-    #if not existing_data.empty:
-        #combined_data = pd.concat([existing_data, session_df], ignore_index=True)
-    #else:
-        #combined_data = session_df
-#else:
-    #combined_data = existing_data
-
-# Provide a download button for the updated file
-#if not combined_data.empty:
-    #csv = combined_data.to_csv(index=False).encode('utf-8')
-    #st.download_button(
-        #label="Download Updated Transactions CSV",
-        #data=csv,
-        #file_name="transactions.csv",
-        #mime="text/csv"
-    #)
-#else:
-    #st.info("No data to download yet.")
-
-
-
-st.sidebar.write("After you have input your values and have gotten your prediction,"
-                 " please ensure you download the CSV file and send it to my mail")
-
-st.sidebar.write("Email: junaidyakub28@gmail.com")
+        st.download_button(
+            label="Download Transactions CSV",
+            data=csv_data,
+            file_name="transactions.csv",
+            mime="text/csv"
+        )
+        st.success("CSV is ready for download!")
+    else:
+        st.warning("No data available to save.")
