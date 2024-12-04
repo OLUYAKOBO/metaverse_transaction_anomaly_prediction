@@ -4,3 +4,4 @@ amount,login_frequency,session_duration,risk_score,sending_address,receiving_add
 5001.0,9,4474.0,19910.92,0,0,Low Risk
 290.0,3,11.99,11.0,0x93efefc25fcaf31d7695f28018d7a11ece55457f,0x8ac3b7bd531b3a833032f07d4e47c7af6ea7bace,Low Risk
 290.0,3,11.99,11.0,0x93efefc25fcaf31d7695f28018d7a11ece55457f1,0x8ac3b7bd531b3a833032f07d4e47c7af6ea7bace,Low Risk
+0.060000000000000005,3,0.10999999999999999,0.0,hbsagduefdckd,jejfdhbdcjhc,Low Risk
