@@ -6,15 +6,17 @@ import numpy as np
 import pickle
 import os
 
-# Load encoders and mappings
-encoder = pkl.load(open('encoder.pkl', 'rb'))
-
 import json
-with open('sending_add.json', 'r') as f:
-    sending_add = json.load(f)
 
-with open('receiving_add.json', 'r') as f:
-    receiving_add = json.load(f)
+def load_json():
+    with open('sending_add.json', 'r') as f:
+        sending_add = json.load(f)
+
+    with open('receiving_add.json', 'r') as f:
+        receiving_add = json.load(f)
+
+    return sending_add,receiving_add
+sending_add,receiving_add = load_json()
 
 # Initialize session state for storing rows
 if "data" not in st.session_state:
@@ -38,8 +40,6 @@ if "data" not in st.session_state:
 
     # Clear session state data
     #st.session_state.data = []
-
-
 
 # Title and description
 st.title("*Metaverse Transaction Anomaly Prediction*")
@@ -82,6 +82,14 @@ def transac_details():
 df = transac_details()
 
 ## Encode categorical features
+
+def load_encoder():
+
+    with open("encoder.pkl","rb") as f:
+        encoder = pickle.load(f)
+    return encoder
+encoder = load_encoder()
+
 def encode(df):
     cat_columns = ['transaction_type', 'location_region', 'purchase_pattern', 'age_group']
     encoded_values = encoder.transform(df[cat_columns])
@@ -93,7 +101,12 @@ def encode(df):
 df = encode(df)
 
 # Load model
-model = pickle.load(open('rand_model.pkl', 'rb'))
+def load_model():
+    with open("model.pkl","rb") as f:
+        model = pickle.load(f)
+    return model
+
+model = load_model()
 
 # Predict transaction risk
 prediction = model.predict(df)[0]
